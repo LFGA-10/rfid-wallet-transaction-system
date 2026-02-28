@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexiPay | Wallet Transaction System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --secondary: #10b981;
+            --accent: #f43f5e;
+            --bg-dark: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --text-high: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-high);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 250px;
+            background: rgba(30, 41, 59, 1);
+            border-right: 1px solid var(--border);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+        }
+
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), #818cf8);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .nav-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-item.active,
+        .nav-item:hover {
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex-grow: 1;
+            padding: 2rem 3rem;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .status-badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* TABS */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* PANELS */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-reader {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-info {
+            margin-left: 1rem;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-uid {
+            font-family: monospace;
+            font-size: 1.25rem;
+            color: var(--secondary);
+            letter-spacing: 1px;
+        }
+
+        .card-bal {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        /* TABLES */
+        .table-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 1rem 1.5rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 1rem 1.5rem;
+            font-size: 0.875rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.topup {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .badge.pay {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--secondary);
+        }
+
+        .result-box {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: var(--radius-md);
+            display: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .result-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+        }
+
+        .result-error {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                </svg>
+            </div>
+            NexiPay
+        </div>
+        <div class="nav-items">
+            <div class="nav-item active" onclick="switchTab('dashboard')">Dashboard</div>
+            <div class="nav-item" onclick="switchTab('topup')">Admin (Top-Up)</div>
+            <div class="nav-item" onclick="switchTab('payment')">Cashier (Payment)</div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="header">
+            <h1 id="page-title">Dashboard Overview</h1>
+            <div class="status-badge" id="ws-status">Connecting...</div>
+        </header>
+
+        <!-- DASHBOARD TAB -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
+                <div class="panel">
+                    <div style="color:var(--text-muted); font-size:0.875rem;">Total Payment Revenue</div>
+                    <div style="font-size:2rem; font-weight:700; margin-top:5px;" id="stat-revenue">$0</div>
+                </div>
+                <div class="panel">
+                    <div style="color:var(--text-muted); font-size:0.875rem;">Total Transactions</div>
+                    <div style="font-size:2rem; font-weight:700; margin-top:5px;" id="stat-transactions">0</div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>UID</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-tbody">
+                        <tr>
+                            <td colspan="6" style="text-align:center;">Loading ledger...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TOP-UP TAB (ADMIN) -->
+        <div id="tab-topup" class="tab-content">
+            <div class="panel" style="max-width: 500px;">
+                <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Credit Wallet</h2>
+
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Last Scanned Card</label>
+                <div class="card-reader">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <path d="M22 10H2"></path>
+                    </svg>
+                    <div class="card-info">
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Waiting for card...</div>
+                            <div class="card-uid active-uid">----</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Current Balance</div>
+                            <div class="card-bal active-bal">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Top-Up Amount ($)</label>
+                    <input type="number" id="topup-amount" placeholder="Enter amount..." min="1">
+                </div>
+                <button class="btn" onclick="submitTopUp()">TOP UP (CREDIT)</button>
+
+                <div class="result-box" id="topup-result"></div>
+            </div>
+        </div>
+
+        <!-- PAYMENT TAB (CASHIER) -->
+        <div id="tab-payment" class="tab-content">
+            <div class="panel" style="max-width: 500px;">
+                <h2 style="font-size: 1.1rem; margin-bottom: 1rem;">Process Payment</h2>
+
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Customer Wallet</label>
+                <div class="card-reader" style="border-color: rgba(244, 63, 94, 0.4);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <path d="M22 10H2"></path>
+                    </svg>
+                    <div class="card-info">
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Waiting for card...</div>
+                            <div class="card-uid active-uid">----</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Available Balance</div>
+                            <div class="card-bal active-bal">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Product / Service</label>
+                    <select id="pay-product" onchange="updateTotal()">
+                        <option value="0" data-price="0">-- Select --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="pay-qty" value="1" min="1" oninput="updateTotal()">
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <div style="font-weight: 600; color: var(--text-muted);">Total Cost</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: white;" id="pay-total">$0</div>
+                </div>
+
+                <button class="btn" style="background: var(--accent);" onclick="submitPayment()">PAY (DEBIT)</button>
+
+                <div class="result-box" id="pay-result"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const host = window.location.hostname || "localhost";
+        const HTTP_URL = `http://${host}:3001`;
+        const WS_URL = `ws://${host}:3001/ws`;
+
+        let currentUid = null;
+        let lastKnownBalance = 0;
+        let totalPendingCost = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStats();
+            fetchTransactions();
+            loadProducts();
+            connectWebsocket();
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabId === 'dashboard') document.getElementById('page-title').innerText = "Dashboard Ledger";
+            if (tabId === 'topup') document.getElementById('page-title').innerText = "Admin Console";
+            if (tabId === 'payment') document.getElementById('page-title').innerText = "Cashier Terminal";
+
+            hideResults();
+        }
+
+        async function loadProducts() {
+            try {
+                const res = await fetch(`${HTTP_URL}/api/products`);
+                const products = await res.json();
+                const sel = document.getElementById('pay-product');
+                products.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.id;
+                    opt.setAttribute('data-price', p.price);
+                    opt.innerText = `${p.name} - $${p.price}`;
+                    sel.appendChild(opt);
+                });
+            } catch (e) { console.error('Products load error', e); }
+        }
+
+        function updateTotal() {
+            const sel = document.getElementById('pay-product');
+            const price = parseInt(sel.options[sel.selectedIndex].getAttribute('data-price')) || 0;
+            const qty = parseInt(document.getElementById('pay-qty').value) || 1;
+            totalPendingCost = price * qty;
+            document.getElementById('pay-total').innerText = `$${totalPendingCost}`;
+        }
+
+        function connectWebsocket() {
+            const ws = new WebSocket(WS_URL);
+
+            ws.onopen = () => {
+                document.getElementById('ws-status').innerText = "System Live";
+                document.getElementById('ws-status').style.color = "var(--secondary)";
+            };
+
+            ws.onmessage = (event) => {
+                let msg; try { msg = JSON.parse(event.data); } catch (e) { return; }
+                const { topic, data } = msg;
+
+                if (topic && topic.includes('card/status')) {
+                    currentUid = data.uid;
+                    lastKnownBalance = data.balance;
+                    updateDisplays(data.uid, data.balance);
+                }
+
+                if (topic === 'server/tx_success') {
+                    // "Result: Approved/Declined + Reason + New Balance"
+                    showResult(data.type === 'TOPUP' ? 'topup-result' : 'pay-result',
+                        `Approved & Saved! New Balance: ${data.new_balance}`, 'success');
+
+                    updateDisplays(data.uid, data.new_balance);
+                    lastKnownBalance = data.new_balance;
+
+                    fetchStats(); fetchTransactions();
+
+                    // Cleanup inputs
+                    if (data.type === 'TOPUP') document.getElementById('topup-amount').value = '';
+                }
+
+                if (topic === 'server/tx_error') {
+                    showResult('pay-result', `Declined: ${data.error}`, 'error');
+                    showResult('topup-result', `Declined: ${data.error}`, 'error');
+                }
+            };
+
+            ws.onclose = () => {
+                document.getElementById('ws-status').innerText = "Reconnecting...";
+                document.getElementById('ws-status').style.color = "var(--accent)";
+                setTimeout(connectWebsocket, 3000);
+            };
+        }
+
+        function updateDisplays(uid, bal) {
+            document.querySelectorAll('.active-uid').forEach(el => el.innerText = uid);
+            document.querySelectorAll('.active-bal').forEach(el => el.innerText = bal);
+        }
+
+        function showResult(boxId, msg, type) {
+            const box = document.getElementById(boxId);
+            box.innerText = msg;
+            box.className = `result-box result-${type}`;
+            box.style.display = 'block';
+        }
+
+        function hideResults() {
+            document.querySelectorAll('.result-box').forEach(el => el.style.display = 'none');
+        }
+
+        async function submitTopUp() {
+            hideResults();
+            if (!currentUid) return alert("Tap a card on the reader to load UID first!");
+            const amt = parseInt(document.getElementById('topup-amount').value);
+            if (!amt || amt <= 0) return alert("Enter valid top-up amount");
+
+            showResult('topup-result', `Waiting for card to be scanned...`, 'success');
+
+            try {
+                await fetch(`${HTTP_URL}/topup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: currentUid, amount: amt })
+                });
+            } catch (err) { alert('API Request failed.'); }
+        }
+
+        async function submitPayment() {
+            hideResults();
+            if (!currentUid) return alert("Tap a card on the reader to load customer UID!");
+            if (totalPendingCost <= 0) return alert("Select a product to purchase!");
+
+            showResult('pay-result', `Verifying card scan... Keep card on reader.`, 'success');
+
+            try {
+                // Endpoint POST /pay mandated by assignment
+                await fetch(`${HTTP_URL}/pay`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ uid: currentUid, amount: totalPendingCost })
+                });
+            } catch (err) { alert('API Request failed.'); }
+        }
+
+        async function fetchStats() {
+            try {
+                const res = await fetch(`${HTTP_URL}/api/stats`);
+                const stats = await res.json();
+                document.getElementById('stat-revenue').innerText = `$${stats.totalRevenue}`;
+                document.getElementById('stat-transactions').innerText = stats.totalTransactions;
+            } catch (err) { console.error(err); }
+        }
+
+        async function fetchTransactions() {
+            try {
+                const res = await fetch(`${HTTP_URL}/api/transactions`);
+                const payments = await res.json();
+                const tbody = document.getElementById('transaction-tbody');
+                tbody.innerHTML = '';
+
+                payments.forEach(p => {
+                    const row = document.createElement('tr');
+                    const timeStr = new Date(p.created_at).toLocaleString();
+                    const badgeClass = p.type === 'TOPUP' ? 'topup' : 'pay';
+
+                    row.innerHTML = `
+                        <td>#${p.id}</td>
+                        <td style="font-family: monospace;">${p.uid}</td>
+                        <td><span class="badge ${badgeClass}">${p.type}</span></td>
+                        <td style="font-weight: 500;">${p.amount}</td>
+                        <td style="font-weight: 600; color: var(--secondary)">${p.status}</td>
+                        <td style="color: var(--text-muted);">${timeStr}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (err) { }
+        }
+    </script>
+</body>
+
+</html>
